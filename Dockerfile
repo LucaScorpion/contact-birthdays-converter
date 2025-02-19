@@ -1,7 +1,7 @@
 FROM python:3-alpine
 
-WORKDIR /app
-COPY convert.sh ./
-COPY vcf_to_ics.py ./
+COPY convert.sh /root/
+COPY vcf_to_ics.py /root/
 
-CMD ["/app/convert.sh" ]
+RUN echo '0 * * * * /root/convert.sh' | crontab -
+CMD ["crond", "-f", "-d", "8"]
