@@ -1,14 +1,18 @@
-#!/usr/bin/env bash
-set -euo pipefail
-shopt -s nullglob
+#!/usr/bin/env sh
+set -eu
 
-if [ -f '.env' ]
+if [ -f './.env' ]
 then
   echo 'Loading .env file'
-  source .env
+  . './.env'
 fi
 
-rm "$BIRTHDAYS_DIR"/*.ics || echo 'Birthdays directory is empty.'
+if [ -z "$(ls -A "$BIRTHDAYS_DIR"/*.ics)" ]
+then
+  echo 'Birthdays directory is empty.'
+else
+  rm "$BIRTHDAYS_DIR"/*.ics
+fi
 
 for contact in "$CONTACTS_DIR"/*.vcf
 do
