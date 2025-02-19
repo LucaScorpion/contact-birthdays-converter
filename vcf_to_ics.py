@@ -1,21 +1,23 @@
 #!/usr/bin/env python
-#	##### BEGIN GPL LICENSE BLOCK #####
+# ##### BEGIN GPL LICENSE BLOCK #####
 #
-#	This program is free software; you can redistribute it and/or
-#	modify it under the terms of the GNU General Public License
-#	as published by the Free Software Foundation; either version 2
-#	of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#	This program is distributed in the hope that it will be useful,
-#	but WITHOUT ANY WARRANTY; without even the implied warranty of
-#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#	GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#	You should have received a copy of the GNU General Public License
-#	along with this program; if not, write to the Free Software Foundation,
-#	Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-#	##### END GPL LICENSE BLOCK #####
+# ##### END GPL LICENSE BLOCK #####
+#
+# Script based on: https://github.com/FoxP/VCF-to-ICS
 
 from string import ascii_letters
 from string import digits
@@ -83,7 +85,7 @@ for sVCard in sVCards:
 
 	# "FN:John Doe" --> ["FN:John Doe", "John Doe"]
 	# "FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65" --> ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"]
-	matchName = re.search(r"FN(?:\:|;.*:)(.*)[\s\S]*?", sVCard)
+	matchName = re.search(r"FN(?::|;.*:)(.*)[\s\S]*?", sVCard)
 
 	if (matchBirthday is not None) and (matchName is not None):
 

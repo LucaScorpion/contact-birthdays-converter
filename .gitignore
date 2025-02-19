@@ -1,2 +1,8 @@
 # Test data
 data/
+
+# IDEs
+.idea/
+
+# Configuration
+.env
