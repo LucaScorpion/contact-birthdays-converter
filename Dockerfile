@@ -1,5 +1,7 @@
 FROM python:3-alpine
 
+WORKDIR /root/
+
 COPY convert.sh /root/
 COPY docker_start.sh /root/
 COPY vcf_to_ics.py /root/
