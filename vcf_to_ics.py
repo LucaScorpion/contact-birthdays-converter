@@ -61,8 +61,8 @@ logger.addHandler(stream_handler)
 logger.debug(f"Input file path: {sInputPath}")
 
 if not os.path.isfile(sInputPath):
-	logger.error("Input path is not a file")
-	sys.exit(1)
+    logger.error("Input path is not a file")
+    sys.exit(1)
 
 # Read VCF file content
 fileInput = open(sInputPath, 'r', encoding='utf-8')
@@ -77,64 +77,66 @@ icsContent = ""
 
 # Parse VCards
 for sVCard in sVCards:
-	# BDAY:--12-01
-	# BDAY:--1201
-	# BDAY:2018-12-01
-	# BDAY:20181201
-	matchBirthday = re.search(r"BDAY:([-\d]+)[\s\S]*?", sVCard)
+    # BDAY:--12-01
+    # BDAY:--1201
+    # BDAY:2018-12-01
+    # BDAY:20181201
+    matchBirthday = re.search(r"BDAY:([-\d]+)[\s\S]*?", sVCard)
 
-	# "FN:John Doe" --> ["FN:John Doe", "John Doe"]
-	# "FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65" --> ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"]
-	matchName = re.search(r"FN(?::|;.*:)(.*)[\s\S]*?", sVCard)
+    # "FN:John Doe" --> ["FN:John Doe", "John Doe"]
+    # "FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65" --> ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"]
+    matchName = re.search(r"FN(?::|;.*:)(.*)[\s\S]*?", sVCard)
 
-	if (matchBirthday is not None) and (matchName is not None):
+    if (matchBirthday is not None) and (matchName is not None):
 
-		# Get the birthday as only numbers: yyyymmdd
-		sBirthday = matchBirthday.group(1).replace("-", "")
+        # Get the birthday as only numbers: yyyymmdd
+        sBirthday = matchBirthday.group(1).replace("-", "")
 
-		# If the year is omitted (mmdd), prepend the current year
-		if len(sBirthday) == 4:
-			sBirthday = f"{time.strftime("%Y")}{sBirthday}"
+        # If the year is omitted (mmdd), prepend the current year
+        if len(sBirthday) == 4:
+            sBirthday = f"{time.strftime("%Y")}{sBirthday}"
 
-		if len(sBirthday) != 8:
-			logger.error(f"Unknown BDAY format: {matchBirthday.group(1)}")
-			continue
+        if len(sBirthday) != 8:
+            logger.error(f"Unknown BDAY format: {matchBirthday.group(1)}")
+            continue
 
-		# Contact name
-		try:
-			# Try to decode Quoted-Printable
-			# ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"] --> "John Doe"
-			sName = quopri.decodestring(matchName.group(1)).decode('utf-8')
-		except:
-			# ["FN:John Doe", "John Doe"] --> "John Doe"
-			sName = matchName.group(1)
+        # Contact name
+        try:
+            # Try to decode Quoted-Printable
+            # ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"] --> "John Doe"
+            sName = quopri.decodestring(matchName.group(1)).decode('utf-8')
+        except:
+            # ["FN:John Doe", "John Doe"] --> "John Doe"
+            sName = matchName.group(1)
 
-		logger.info(f"{str(sName)}: {str(sBirthday)}")
-		iVCardNbr = iVCardNbr + 1
+        logger.info(f"{str(sName)}: {str(sBirthday)}")
+        iVCardNbr = iVCardNbr + 1
 
-		# Unique ID
-		sUID = sBirthday + "-" + ''.join([random.choice(list(ascii_letters + digits)) for _ in range(16)]) + "@VCFtoICS.com"
+        # Unique ID
+        sUID = sBirthday + "-" + ''.join(
+            [random.choice(list(ascii_letters + digits)) for _ in range(16)]) + "@VCFtoICS.com"
 
-		# Store ICS content
-		icsContent += f"BEGIN:VEVENT\nDTSTART:{sBirthday}\nSUMMARY:{sName}\nRRULE:FREQ=YEARLY\nDURATION:P1D\nUID:{sUID}\nEND:VEVENT\n"
+        # Store ICS content
+        icsContent += f"BEGIN:VEVENT\nDTSTART:{sBirthday}\nSUMMARY:{sName}\nRRULE:FREQ=YEARLY\nDURATION:P1D\nUID:{sUID}\nEND:VEVENT\n"
 
-if (iVCardNbr == 0):
-	logger.debug(f"No VCard found")
-	sys.exit(0)
+if iVCardNbr == 0:
+    logger.debug(f"No VCard found")
+    sys.exit(0)
 
 logger.debug(f"{str(iVCardNbr)} VCard(s) found")
 
 # Open the file
 try:
-	fileOutput = open(sOutputPath, 'w', encoding='utf-8')
+    fileOutput = open(sOutputPath, 'w', encoding='utf-8')
 except:
-	logger.error(f"Invalid output file path: {sOutputPath}")
-	sys.exit(1)
+    logger.error(f"Invalid output file path: {sOutputPath}")
+    sys.exit(1)
 
 logger.debug(f"Output file path: {sOutputPath}")
 
 # Write ICS header, content, footer
-fileOutput.write(f"BEGIN:VCALENDAR\nPRODID:-//{PROGRAM_NAME}//NONSGML {sCalendarName} V1.0//EN\nX-WR-CALNAME:{sCalendarName}\nVERSION:2.0\n")
+fileOutput.write(
+    f"BEGIN:VCALENDAR\nPRODID:-//{PROGRAM_NAME}//NONSGML {sCalendarName} V1.0//EN\nX-WR-CALNAME:{sCalendarName}\nVERSION:2.0\n")
 fileOutput.write(icsContent)
 fileOutput.write("END:VCALENDAR")
 
