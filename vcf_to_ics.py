@@ -87,8 +87,11 @@ for sVCard in sVCards:
     # "FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65" --> ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"]
     matchName = re.search(r"FN(?::|;.*:)(.*)[\s\S]*?", sVCard)
 
-    # If we didn't find a birthday or name, skip
-    if (matchBirthday is None) or (matchName is None):
+    # UID:<uid>
+    matchUid = re.search(r"UID:(.*)[\s\S]*?", sVCard)
+
+    # If we didn't find all required values, skip
+    if (matchBirthday is None) or (matchName is None) or (matchUid is None):
         continue
 
     # Get the birthday as only numbers: yyyymmdd
@@ -116,11 +119,17 @@ for sVCard in sVCards:
     iVCardNbr = iVCardNbr + 1
 
     # Unique ID
-    sUID = sBirthday + "-" + ''.join(
-        [random.choice(list(ascii_letters + digits)) for _ in range(16)]) + "@VCFtoICS.com"
+    uid = matchUid.group(1)
 
     # Store ICS content
-    icsContent += f"BEGIN:VEVENT\nDTSTART:{sBirthday}\nSUMMARY:{sName}\nRRULE:FREQ=YEARLY\nDURATION:P1D\nUID:{sUID}\nEND:VEVENT\n"
+    icsContent += f"""BEGIN:VEVENT
+DTSTART:{sBirthday}
+SUMMARY:{sName}
+RRULE:FREQ=YEARLY
+DURATION:P1D
+UID:{uid}
+END:VEVENT
+"""
 
 if iVCardNbr == 0:
     logger.debug(f"No VCard found")
