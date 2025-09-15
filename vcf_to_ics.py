@@ -87,37 +87,40 @@ for sVCard in sVCards:
     # "FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65" --> ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"]
     matchName = re.search(r"FN(?::|;.*:)(.*)[\s\S]*?", sVCard)
 
-    if (matchBirthday is not None) and (matchName is not None):
+    # If we didn't find a birthday or name, skip
+    if (matchBirthday is None) or (matchName is None):
+        continue
 
-        # Get the birthday as only numbers: yyyymmdd
-        sBirthday = matchBirthday.group(1).replace("-", "")
+    # Get the birthday as only numbers: yyyymmdd
+    sBirthday = matchBirthday.group(1).replace("-", "")
 
-        # If the year is omitted (mmdd), prepend the current year
-        if len(sBirthday) == 4:
-            sBirthday = f"{time.strftime("%Y")}{sBirthday}"
+    # If the year is omitted (mmdd), prepend the current year
+    if len(sBirthday) == 4:
+        sBirthday = f"{time.strftime("%Y")}{sBirthday}"
 
-        if len(sBirthday) != 8:
-            logger.error(f"Unknown BDAY format: {matchBirthday.group(1)}")
-            continue
+    # Check if the date string is valid.
+    if len(sBirthday) != 8:
+        logger.error(f"Unknown BDAY format: {matchBirthday.group(1)}")
+        continue
 
-        # Contact name
-        try:
-            # Try to decode Quoted-Printable
-            # ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"] --> "John Doe"
-            sName = quopri.decodestring(matchName.group(1)).decode('utf-8')
-        except:
-            # ["FN:John Doe", "John Doe"] --> "John Doe"
-            sName = matchName.group(1)
+    # Contact name
+    try:
+        # Try to decode Quoted-Printable
+        # ["FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=4A=6F=68=6E=20=44=6F=65", "=4A=6F=68=6E=20=44=6F=65"] --> "John Doe"
+        sName = quopri.decodestring(matchName.group(1)).decode('utf-8')
+    except:
+        # ["FN:John Doe", "John Doe"] --> "John Doe"
+        sName = matchName.group(1)
 
-        logger.info(f"{str(sName)}: {str(sBirthday)}")
-        iVCardNbr = iVCardNbr + 1
+    logger.info(f"{str(sName)}: {str(sBirthday)}")
+    iVCardNbr = iVCardNbr + 1
 
-        # Unique ID
-        sUID = sBirthday + "-" + ''.join(
-            [random.choice(list(ascii_letters + digits)) for _ in range(16)]) + "@VCFtoICS.com"
+    # Unique ID
+    sUID = sBirthday + "-" + ''.join(
+        [random.choice(list(ascii_letters + digits)) for _ in range(16)]) + "@VCFtoICS.com"
 
-        # Store ICS content
-        icsContent += f"BEGIN:VEVENT\nDTSTART:{sBirthday}\nSUMMARY:{sName}\nRRULE:FREQ=YEARLY\nDURATION:P1D\nUID:{sUID}\nEND:VEVENT\n"
+    # Store ICS content
+    icsContent += f"BEGIN:VEVENT\nDTSTART:{sBirthday}\nSUMMARY:{sName}\nRRULE:FREQ=YEARLY\nDURATION:P1D\nUID:{sUID}\nEND:VEVENT\n"
 
 if iVCardNbr == 0:
     logger.debug(f"No VCard found")
